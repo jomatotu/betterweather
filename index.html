@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="BetterWeather – Das Wetter, wie es sein sollte." />
+  <title>BetterWeather</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="page">
+
+    <!-- Header -->
+    <header>
+      <div class="brand">
+        <h1>BetterWeather</h1>
+        <p>Das Wetter, wie es sein sollte.</p>
+      </div>
+      <button id="dark-toggle" aria-label="Dunkelmodus aktivieren" title="Dunkelmodus umschalten">🌙</button>
+    </header>
+
+    <!-- Search -->
+    <div class="search-wrapper">
+      <div class="search-inner">
+        <input
+          id="search-input"
+          type="search"
+          autocomplete="off"
+          spellcheck="false"
+          placeholder="Stadt suchen…"
+          aria-label="Stadt suchen"
+          aria-autocomplete="list"
+          aria-controls="autocomplete"
+        />
+        <span class="search-icon" aria-hidden="true">🔍</span>
+      </div>
+      <ul id="autocomplete" role="listbox" aria-label="Stadtvorschläge"></ul>
+    </div>
+
+    <!-- Loading state -->
+    <div id="loading" class="glass" role="status" aria-live="polite">
+      <div class="spinner" aria-hidden="true"></div>
+      <p>Wetterdaten werden geladen…</p>
+    </div>
+
+    <!-- Error state -->
+    <div id="error" class="glass" role="alert" aria-live="assertive" hidden>
+      <div class="error-icon" aria-hidden="true">🌤️</div>
+      <h2>Ups – da ist etwas schiefgelaufen</h2>
+      <p id="error-msg">Unbekannte Stadt oder keine Verbindung zur Wetter-API.</p>
+    </div>
+
+    <!-- Weather content -->
+    <div id="weather" hidden>
+
+      <!-- Current weather card -->
+      <section class="glass current-card" aria-label="Aktuelles Wetter">
+        <div class="current-top">
+          <div class="current-location">
+            <span id="current-city">–</span>
+            <span id="current-country"></span>
+          </div>
+          <div class="current-main">
+            <span id="current-icon" aria-hidden="true">⛅</span>
+            <div class="current-temps">
+              <span id="current-temp">–°</span>
+              <span id="current-label">–</span>
+              <span id="current-feels">–</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stats row -->
+        <div class="stats-row">
+          <div class="stat-item">
+            <span class="stat-icon" aria-hidden="true">💨</span>
+            <span class="stat-label">Wind</span>
+            <span class="stat-value" id="stat-wind">–</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-icon" aria-hidden="true">💧</span>
+            <span class="stat-label">Luftfeuchte</span>
+            <span class="stat-value" id="stat-humidity">–</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-icon" aria-hidden="true">🌡️</span>
+            <span class="stat-label">Luftdruck</span>
+            <span class="stat-value" id="stat-pressure">–</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-icon" aria-hidden="true">☂️</span>
+            <span class="stat-label">Niederschlag</span>
+            <span class="stat-value" id="stat-precip">–</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Hourly forecast -->
+      <section class="glass hourly-card" aria-label="Stündliche Vorhersage">
+        <p class="section-title">Stündlich – 24h</p>
+        <div id="hourly-strip" role="list" aria-label="Stündliche Temperaturen"></div>
+      </section>
+
+      <!-- 7-day forecast -->
+      <section class="glass daily-card" aria-label="7-Tage-Vorhersage">
+        <p class="section-title">7-Tage-Vorhersage</p>
+        <div id="daily-grid" role="list" aria-label="Tagesvorhersagen"></div>
+      </section>
+
+    </div><!-- /weather -->
+
+    <footer>
+      Wetterdaten von <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a>
+      &nbsp;·&nbsp; BetterWeather &copy; 2026
+    </footer>
+
+  </div><!-- /page -->
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
