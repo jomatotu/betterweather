@@ -1,5 +1,5 @@
 import { searchCity, fetchWeather } from './api.js';
-import { transformCurrent, transformHourly, transformDaily, getBoost, incrementBoost } from './transform.js';
+import { transformCurrent, transformHourly, transformDaily, getBoost, incrementBoost, resetBoost } from './transform.js';
 import { LANGUAGES, getLang, setLang, tr } from './i18n.js';
 
 // Curated Unsplash sunny-day photo IDs
@@ -141,6 +141,9 @@ async function doSearch() {
 
 // ── Weather ────────────────────────────────────────────────────────────────
 async function loadWeather(lat, lon, name, country) {
+  // Reset improvement counter for each new city
+  resetBoost();
+  updateDislikeCount();
   Object.assign(state, { lat, lon, name, country });
   localStorage.setItem('last_city', JSON.stringify({ lat, lon, name, country }));
   showLoading();
@@ -198,6 +201,51 @@ function renderCurrent(c) {
   $('lbl-humidity').textContent     = tr('humidity');
   $('lbl-pressure').textContent     = tr('pressure');
   $('lbl-precip').textContent       = tr('precipitation');
+  renderRecommendationCard(c);
+}
+
+// ── Recommendation card ────────────────────────────────────────────────────
+const OUTDOOR_PHOTOS = [
+  '1530549387789-4c161d022627', // cycling
+  '1476480862126-209bfaa8edc8', // running park
+  '1506748686214-e9df14d4d9d0', // picnic sunny
+  '1551632436-cbf8dd35adfa', // hiking
+  '1571019613454-1cb2f99b2d8b', // outdoor sports
+  '1517649763962-0c623066013b', // beach day
+  '1533105079780-92b9be482077', // cafe terrace
+  '1488646953014-85cb44e25828', // garden
+  '1529156069898-49953e39b3ac', // friends outdoor
+  '1544367567-0f2fcb009e0b', // sunset walk
+];
+
+function getRecommendation(c, cityName) {
+  const lang = getLang();
+  const temp = ri(c.temperature_2m);
+  const wind = ri(c.wind_speed_10m);
+
+  // Pick recommendation category based on weather
+  let key;
+  if (temp >= 24 && wind < 15) key = 'rec_hot_calm';
+  else if (temp >= 18 && wind < 20) key = 'rec_warm';
+  else if (temp >= 14) key = 'rec_mild';
+  else key = 'rec_cool';
+
+  const recs = tr(key);
+  // deterministic pick based on city
+  const seed = [...cityName].reduce((a, ch) => a + ch.charCodeAt(0), 0);
+  return recs[seed % recs.length].replace('{city}', cityName);
+}
+
+function renderRecommendationCard(c) {
+  const card = $('rec-card');
+  const seed = [...state.name].reduce((a, ch) => a + ch.charCodeAt(0), 0);
+  const photoId = OUTDOOR_PHOTOS[seed % OUTDOOR_PHOTOS.length];
+  card.style.backgroundImage =
+    `url(https://images.unsplash.com/photo-${photoId}?w=600&h=400&fit=crop&q=75&auto=format)`;
+
+  $('rec-title').textContent = tr('rec_title');
+  $('rec-text').textContent  = getRecommendation(c, state.name);
+  $('rec-temp-badge').textContent = `${wmoEmoji(c.weather_code)} ${ri(c.temperature_2m)}°`;
 }
 
 // Current time from API string e.g. "2026-06-14T19:00" → hour number

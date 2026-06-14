@@ -56,34 +56,48 @@
           </div>
         </div>
 
-        <!-- Current -->
-        <div class="current-card glass-card">
-          <div class="current-main">
-            <span id="cur-icon" aria-hidden="true"></span>
-            <div class="current-temps">
-              <div id="cur-temp"></div>
-              <div id="cur-feels"></div>
-              <div id="cur-desc"></div>
+        <!-- Current: two-column hero grid -->
+        <div class="hero-grid">
+
+          <!-- Left: current weather -->
+          <div class="current-card glass-card">
+            <div class="current-main">
+              <span id="cur-icon" aria-hidden="true"></span>
+              <div class="current-temps">
+                <div id="cur-temp"></div>
+                <div id="cur-feels"></div>
+                <div id="cur-desc"></div>
+              </div>
+            </div>
+            <div class="current-details">
+              <div class="detail-item">
+                <div class="detail-label" id="lbl-wind"></div>
+                <div class="detail-value" id="cur-wind"></div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-label" id="lbl-humidity"></div>
+                <div class="detail-value" id="cur-humidity"></div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-label" id="lbl-pressure"></div>
+                <div class="detail-value" id="cur-pressure"></div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-label" id="lbl-precip"></div>
+                <div class="detail-value" id="cur-precip"></div>
+              </div>
             </div>
           </div>
-          <div class="current-details">
-            <div class="detail-item">
-              <div class="detail-label" id="lbl-wind"></div>
-              <div class="detail-value" id="cur-wind"></div>
-            </div>
-            <div class="detail-item">
-              <div class="detail-label" id="lbl-humidity"></div>
-              <div class="detail-value" id="cur-humidity"></div>
-            </div>
-            <div class="detail-item">
-              <div class="detail-label" id="lbl-pressure"></div>
-              <div class="detail-value" id="cur-pressure"></div>
-            </div>
-            <div class="detail-item">
-              <div class="detail-label" id="lbl-precip"></div>
-              <div class="detail-value" id="cur-precip"></div>
+
+          <!-- Right: recommendation card with photo bg -->
+          <div class="rec-card glass-card" id="rec-card">
+            <div class="rec-overlay">
+              <div class="rec-badge" id="rec-temp-badge"></div>
+              <h3 class="rec-title" id="rec-title"></h3>
+              <p class="rec-text" id="rec-text"></p>
             </div>
           </div>
+
         </div>
 
         <!-- Chart -->

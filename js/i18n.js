@@ -41,6 +41,27 @@ export const T = {
     imprint_text: '<h2>Imprint</h2><p>BetterWeather is a satirical weather service for entertainment purposes only.</p><p>Contact: hello@betterweather.example</p>',
     privacy_text: '<h2>Privacy Policy</h2><p>BetterWeather does not store personal data. Weather data is fetched directly from <a href="https://open-meteo.com" target="_blank">Open-Meteo</a> in your browser. No cookies are set. Your last searched city is stored locally in your browser (localStorage) for convenience.</p>',
     disclaimer_text: '<h2>Disclaimer</h2><p>BetterWeather displays intentionally optimistic weather forecasts for entertainment purposes. Do not rely on BetterWeather for actual weather decisions. Always consult a real weather service before outdoor activities.</p>',
+    rec_title: 'Should you go outside today?',
+    rec_hot_calm: [
+      'Absolutely — {city} is at its finest right now. Pack a light bottle of water and head outside. Perfect for a terrace lunch, a bike ride, or just soaking up the sun.',
+      'Yes! Conditions in {city} are ideal for outdoor sports. Great time for a run, tennis, or a long stroll through the city.',
+      'Definitely. This is the kind of day in {city} you\'ll want to spend outside. Grab your sunglasses and make the most of it.',
+    ],
+    rec_warm: [
+      'Great time to get outside in {city}. The temperature is just right for a walk, a café visit outdoors, or a cycling tour.',
+      'Conditions in {city} are comfortable and pleasant. A walk in the park or a trip to the market is a great call today.',
+      'Yes — {city} weather is cooperating nicely. Good day for outdoor errands, a jog, or meeting friends at a terrace.',
+    ],
+    rec_mild: [
+      'Worth stepping out in {city}. Layer up lightly and enjoy a walk or a bike ride — the air is refreshing and conditions are stable.',
+      'Mild and agreeable in {city}. A jacket might be handy, but the conditions are perfectly fine for outdoor plans.',
+      'Go for it. {city} is showing decent conditions today — good for a stroll, sightseeing, or outdoor coffee.',
+    ],
+    rec_cool: [
+      'It\'s a bit fresh in {city}, but that\'s no reason to stay in. Dress in layers and enjoy the crisp air — great for hiking or a brisk walk.',
+      'Cooler today in {city}, but fully enjoyable outdoors with the right outfit. Perfect for active pursuits.',
+      '{city} is on the cooler side — ideal if you enjoy energetic outdoor activities like jogging or cycling.',
+    ],
   },
   de: {
     tagline: 'Das Wetter, wie es sein sollte.',
@@ -73,6 +94,27 @@ export const T = {
     imprint_text: '<h2>Impressum</h2><p>BetterWeather ist ein satirischer Wetterdienst ausschließlich zu Unterhaltungszwecken.</p><p>Kontakt: hello@betterweather.example</p>',
     privacy_text: '<h2>Datenschutzerklärung</h2><p>BetterWeather speichert keine personenbezogenen Daten. Wetterdaten werden direkt von <a href="https://open-meteo.com" target="_blank">Open-Meteo</a> in Ihrem Browser abgerufen. Es werden keine Cookies gesetzt. Die zuletzt gesuchte Stadt wird lokal in Ihrem Browser (localStorage) gespeichert.</p>',
     disclaimer_text: '<h2>Haftungsausschluss</h2><p>BetterWeather zeigt bewusst optimistische Wettervorhersagen zu Unterhaltungszwecken. Verlassen Sie sich nicht auf BetterWeather für echte Wetterentscheidungen. Konsultieren Sie immer einen echten Wetterdienst vor Außenaktivitäten.</p>',
+    rec_title: 'Heute raus — lohnt sich das?',
+    rec_hot_calm: [
+      'Unbedingt! {city} zeigt sich heute von seiner besten Seite. Ideal für eine Fahrradtour, ein Mittagessen auf der Terrasse oder einfach die Sonne genießen.',
+      'Ja! Die Bedingungen in {city} sind perfekt für Sport im Freien. Laufen, Tennis oder ein langer Stadtspaziergang — heute ist alles drin.',
+      'Definitiv. Schnapp dir die Sonnenbrille und geh raus — {city} schenkt dir heute einen dieser seltenen perfekten Tage.',
+    ],
+    rec_warm: [
+      'Gute Zeit für einen Ausflug in {city}. Die Temperatur ist angenehm — ideal für einen Spaziergang, ein Café im Freien oder eine Radtour.',
+      'Das Wetter in {city} lädt ein. Ein Ausflug in den Park, auf den Markt oder mit Freunden auf eine Terrasse ist heute eine gute Idee.',
+      'Ja — {city} zeigt sich heute freundlich. Gut geeignet für Outdoor-Erledigungen, Joggen oder ein Treffen draußen.',
+    ],
+    rec_mild: [
+      'Ruhig raus in {city}. Eine leichte Jacke, und du kannst Spaziergang oder Radtour unbeschwert genießen — die Luft ist frisch und angenehm.',
+      'Mild und gut in {city}. Eine Lage mehr schadet nicht, aber die Bedingungen sind völlig in Ordnung für Pläne draußen.',
+      'Nichts hält dich auf. {city} zeigt heute solide Bedingungen — gut für einen Bummel, Sightseeing oder Kaffee draußen.',
+    ],
+    rec_cool: [
+      'Etwas frisch in {city}, aber kein Grund drin zu bleiben. In Lagen gekleidet genießt du die klare Luft — ideal zum Wandern oder für einen forschen Spaziergang.',
+      'Kühler heute in {city}, aber mit dem richtigen Outfit vollkommen genießbar. Perfekt für aktive Aktivitäten im Freien.',
+      '{city} ist heute eher kühl — genau das Richtige wenn du Joggen, Radfahren oder andere energische Outdoor-Aktivitäten magst.',
+    ],
   },
   fr: {
     tagline: 'La météo comme elle devrait être.',

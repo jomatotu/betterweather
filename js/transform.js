@@ -32,6 +32,10 @@ export function incrementBoost() {
   return n;
 }
 
+export function resetBoost() {
+  localStorage.removeItem('dislike_clicks');
+}
+
 function boost() {
   // Each click: +0.3°C temp, wind -0.5 km/h, humidity -1%
   const n = getBoost();
