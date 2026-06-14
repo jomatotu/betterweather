@@ -9,3 +9,6 @@
 **Q3:** Soll eine stündliche Vorhersage für die nächsten 24 Stunden angezeigt werden?
 **Antwort:** Ja
 
+**Q4:** Soll es einen versteckten Easter-Egg-Hinweis geben (z.B. "Powered by optimism")?
+**Antwort:** Nein — komplett straight, kein Hinweis
+
