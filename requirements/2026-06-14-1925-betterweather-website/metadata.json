@@ -1,0 +1,9 @@
+{
+  "name": "betterweather-website",
+  "description": "Wetter-Website die echte Wetterdaten abruft aber immer optimistisch transformiert anzeigt – kein schlechtes Wetter möglich",
+  "created": "2026-06-14T19:25:00Z",
+  "status": "in-progress",
+  "phase": "discovery",
+  "discovery_questions_answered": 0,
+  "detail_questions_answered": 0
+}
