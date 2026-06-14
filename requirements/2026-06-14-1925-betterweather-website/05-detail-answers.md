@@ -6,3 +6,6 @@
 **Q2:** Soll das Projekt als reines Frontend (HTML/CSS/JS, kein Backend) gebaut werden?
 **Antwort:** Ja
 
+**Q3:** Soll eine stündliche Vorhersage für die nächsten 24 Stunden angezeigt werden?
+**Antwort:** Ja
+
