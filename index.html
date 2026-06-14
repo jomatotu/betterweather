@@ -3,142 +3,150 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BetterWeather — The weather as it should be</title>
-  <meta name="description" content="Weather forecast for anywhere in the world — always sunny, always pleasant." />
+  <title>BetterWeather</title>
+  <meta name="description" content="Weather forecast for anywhere — always sunny, always pleasant." />
   <link rel="stylesheet" href="style.css" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
 </head>
 <body>
-  <div class="container">
+  <div class="page-wrap">
+    <div class="container">
 
-    <!-- Header -->
-    <header>
-      <div class="logo">
-        <h1>🌤 BetterWeather</h1>
-        <p id="tagline"></p>
-      </div>
-      <div class="header-controls">
-        <select id="lang-select" aria-label="Language"></select>
-        <button id="theme-toggle" aria-label="Toggle dark mode">🌙</button>
-      </div>
-    </header>
+      <!-- Header -->
+      <header>
+        <div class="logo">
+          <h1>🌤 BetterWeather</h1>
+          <p id="tagline"></p>
+        </div>
+        <div class="header-controls">
+          <select id="lang-select" aria-label="Language"></select>
+          <button id="theme-toggle" aria-label="Toggle dark mode">🌙</button>
+        </div>
+      </header>
 
-    <!-- Search -->
-    <div class="search-wrapper">
-      <div class="search-bar">
-        <input id="search-input" type="text" autocomplete="off" aria-label="Search city" />
-        <button id="search-btn"><span>Search</span></button>
+      <!-- Search -->
+      <div class="search-wrapper">
+        <div class="search-bar">
+          <input id="search-input" type="text" autocomplete="off" />
+          <button id="search-btn"><span id="search-btn-text">Search</span></button>
+        </div>
+        <ul id="suggestions" hidden></ul>
       </div>
-      <ul id="suggestions" hidden></ul>
+
+      <!-- Loading -->
+      <div id="loading-box" hidden>
+        <div class="spinner"></div>
+        <span id="loading-text"></span>
+      </div>
+
+      <!-- Error -->
+      <div id="error-box" hidden></div>
+
+      <!-- Main -->
+      <main id="main-content" hidden>
+
+        <div class="city-row">
+          <h2 id="city-title"></h2>
+          <div class="dislike-wrapper">
+            <button id="dislike-btn">
+              <span class="dislike-icon">😕</span>
+              <span id="dislike-text"></span>
+            </button>
+            <span id="dislike-count" hidden></span>
+          </div>
+        </div>
+
+        <!-- Current -->
+        <div class="current-card glass-card">
+          <div class="current-main">
+            <span id="cur-icon" aria-hidden="true"></span>
+            <div class="current-temps">
+              <div id="cur-temp"></div>
+              <div id="cur-feels"></div>
+              <div id="cur-desc"></div>
+            </div>
+          </div>
+          <div class="current-details">
+            <div class="detail-item">
+              <div class="detail-label" id="lbl-wind"></div>
+              <div class="detail-value" id="cur-wind"></div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label" id="lbl-humidity"></div>
+              <div class="detail-value" id="cur-humidity"></div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label" id="lbl-pressure"></div>
+              <div class="detail-value" id="cur-pressure"></div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label" id="lbl-precip"></div>
+              <div class="detail-value" id="cur-precip"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chart -->
+        <section class="section">
+          <h3 class="section-title" id="lbl-chart"></h3>
+          <div class="chart-wrapper glass-card">
+            <canvas id="temp-chart"></canvas>
+          </div>
+        </section>
+
+        <!-- Hourly -->
+        <section class="section">
+          <h3 class="section-title" id="lbl-hourly"></h3>
+          <div id="hourly-list" class="hourly-list"></div>
+        </section>
+
+        <!-- Daily -->
+        <section class="section">
+          <h3 class="section-title" id="lbl-daily"></h3>
+          <div id="daily-list"></div>
+        </section>
+
+        <!-- Map + Photos -->
+        <div class="map-photos-row">
+          <section class="map-section">
+            <h3 class="section-title" id="lbl-map"></h3>
+            <div id="weather-map" class="glass-card"></div>
+          </section>
+          <section class="photos-section">
+            <h3 class="section-title" id="lbl-photos"></h3>
+            <div id="photos-container"></div>
+          </section>
+        </div>
+
+      </main>
     </div>
 
-    <!-- Loading / Error -->
-    <div id="loading-box" hidden></div>
-    <div id="error-box" hidden></div>
-
-    <!-- Main content -->
-    <div id="main-content" hidden>
-
-      <div class="city-row">
-        <p id="city-title"></p>
-        <div class="dislike-wrapper">
-          <button id="dislike-btn" title="">
-            <span class="dislike-icon">😕</span>
-            <span class="dislike-text"></span>
-          </button>
-          <span id="dislike-count" hidden></span>
-        </div>
+    <!-- Footer -->
+    <footer>
+      <div class="footer-inner">
+        <span class="footer-brand">🌤 BetterWeather</span>
+        <nav class="footer-links">
+          <button class="footer-link" id="btn-imprint"></button>
+          <button class="footer-link" id="btn-privacy"></button>
+          <button class="footer-link" id="btn-disclaimer"></button>
+        </nav>
+        <span class="footer-copy">© 2026 BetterWeather</span>
       </div>
-
-      <!-- Current weather -->
-      <div class="current-card glass-card">
-        <div class="current-main">
-          <span id="cur-icon"></span>
-          <div class="current-temps">
-            <div id="cur-temp"></div>
-            <div id="cur-feels"></div>
-            <div id="cur-desc"></div>
-          </div>
-        </div>
-        <div class="current-details">
-          <div class="detail-item">
-            <div class="detail-label" id="label-wind"></div>
-            <div class="detail-value" id="cur-wind"></div>
-          </div>
-          <div class="detail-item">
-            <div class="detail-label" id="label-humidity"></div>
-            <div class="detail-value" id="cur-humidity"></div>
-          </div>
-          <div class="detail-item">
-            <div class="detail-label" id="label-pressure"></div>
-            <div class="detail-value" id="cur-pressure"></div>
-          </div>
-          <div class="detail-item">
-            <div class="detail-label" id="label-precip"></div>
-            <div class="detail-value" id="cur-precip"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Chart -->
-      <div class="chart-section">
-        <p class="section-title" id="label-chart"></p>
-        <div class="chart-wrapper glass-card">
-          <canvas id="temp-chart"></canvas>
-        </div>
-      </div>
-
-      <!-- Hourly -->
-      <div class="hourly-section">
-        <p class="section-title" id="label-hourly"></p>
-        <div id="hourly-list"></div>
-      </div>
-
-      <!-- Daily -->
-      <div class="daily-section">
-        <p class="section-title" id="label-daily"></p>
-        <div id="daily-list"></div>
-      </div>
-
-      <!-- Map + Photos side by side -->
-      <div class="map-photos-row">
-        <div class="map-section">
-          <p class="section-title" id="label-map"></p>
-          <div id="weather-map" class="glass-card"></div>
-        </div>
-        <div class="photos-section">
-          <p class="section-title" id="label-photos"></p>
-          <div id="photos-container"></div>
-        </div>
-      </div>
-
-    </div>
+    </footer>
   </div>
 
-  <!-- Footer -->
-  <footer>
-    <div class="footer-inner">
-      <span class="footer-brand">🌤 BetterWeather</span>
-      <nav class="footer-links">
-        <button class="footer-link" id="footer-imprint"></button>
-        <button class="footer-link" id="footer-privacy"></button>
-        <button class="footer-link" id="footer-disclaimer"></button>
-      </nav>
-      <span class="footer-copy">© 2026 BetterWeather</span>
-    </div>
-  </footer>
-
-  <!-- Legal Modal -->
-  <div id="legal-modal" hidden role="dialog" aria-modal="true">
-    <div class="modal-backdrop"></div>
+  <!-- Modal -->
+  <div id="legal-modal" hidden role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-backdrop" id="modal-backdrop"></div>
     <div class="modal-box glass-card">
       <button id="modal-close" aria-label="Close">✕</button>
       <div id="modal-body"></div>
     </div>
   </div>
 
+  <!-- Load libs synchronously so globals are available before app.js -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script type="module" src="js/app.js"></script>
 </body>
 </html>

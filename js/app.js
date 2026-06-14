@@ -1,131 +1,115 @@
 import { searchCity, fetchWeather } from './api.js';
 import { transformCurrent, transformHourly, transformDaily, getBoost, incrementBoost } from './transform.js';
-import { LANGUAGES, getLang, setLang, t } from './i18n.js';
+import { LANGUAGES, getLang, setLang, tr } from './i18n.js';
 
-// Sunny Unsplash photo IDs (curated)
-const SUNNY_PHOTOS = [
-  'photo-1504701954957-2010ec3bcec1',
-  'photo-1477959858617-67f85cf4f1df',
-  'photo-1506905925346-21bda4d32df4',
-  'photo-1500534314209-a25ddb2bd429',
-  'photo-1470071459604-3b5ec3a7fe05',
-  'photo-1501854140801-50d01698950b',
-  'photo-1464822759023-fed622ff2c3b',
-  'photo-1433086966358-54859d0ed716',
-  'photo-1518173946687-a4c8892bbd9f',
-  'photo-1493246507139-91e8fad9978e',
+// Curated Unsplash sunny-day photo IDs
+const PHOTOS = [
+  '1504701954957-2010ec3bcec1','1477959858617-67f85cf4f1df','1506905925346-21bda4d32df4',
+  '1500534314209-a25ddb2bd429','1470071459604-3b5ec3a7fe05','1501854140801-50d01698950b',
+  '1464822759023-fed622ff2c3b','1433086966358-54859d0ed716','1518173946687-a4c8892bbd9f',
+  '1493246507139-91e8fad9978e',
 ];
 
-function wmoText(code) { return (t('wmo')[code]) ?? t('wmo')[2]; }
-function wmoEmoji(code) {
-  return { 0: '☀️', 1: '🌤️', 2: '⛅', 3: '🌥️' }[code] ?? '🌤️';
-}
-function round(n) { return Math.round(n * 10) / 10; }
-function roundInt(n) { return Math.round(n); }
+const WMO_EMOJI = { 0:'☀️', 1:'🌤️', 2:'⛅', 3:'🌥️' };
+const ri = n => Math.round(n);
+const wmoEmoji = code => WMO_EMOJI[code] ?? '🌤️';
+const wmoText  = code => tr('wmo')[code] ?? tr('wmo')[2];
 
-// --- State ---
-let currentLat = 52.52, currentLon = 13.405, currentName = 'Berlin', currentCountry = 'Germany';
-let rawWeatherData = null;
-let leafletMap = null;
-let leafletMarker = null;
-let tempChart = null;
+// ── State ──────────────────────────────────────────────────────────────────
+let state = { lat: 52.52, lon: 13.405, name: 'Berlin', country: 'Germany', raw: null, tz: 'auto' };
+let leafletMap = null, leafletMarker = null, tempChart = null;
 
-// --- DOM refs ---
-const searchInput = document.getElementById('search-input');
-const searchBtn = document.getElementById('search-btn');
-const suggestions = document.getElementById('suggestions');
-const themeToggle = document.getElementById('theme-toggle');
-const langSelect = document.getElementById('lang-select');
-const mainContent = document.getElementById('main-content');
-const errorBox = document.getElementById('error-box');
-const loadingBox = document.getElementById('loading-box');
-const cityTitle = document.getElementById('city-title');
-const dislikeBtn = document.getElementById('dislike-btn');
-const dislikeCount = document.getElementById('dislike-count');
-const modal = document.getElementById('legal-modal');
-const modalBody = document.getElementById('modal-body');
-const modalClose = document.getElementById('modal-close');
+// ── DOM ────────────────────────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+const searchInput  = $('search-input');
+const searchBtn    = $('search-btn');
+const suggestions  = $('suggestions');
+const themeToggle  = $('theme-toggle');
+const langSelect   = $('lang-select');
+const mainContent  = $('main-content');
+const errorBox     = $('error-box');
+const loadingBox   = $('loading-box');
+const loadingText  = $('loading-text');
+const cityTitle    = $('city-title');
+const dislikeBtn   = $('dislike-btn');
+const dislikeCount = $('dislike-count');
+const modal        = $('legal-modal');
+const modalBody    = $('modal-body');
 
-// --- Language ---
-function populateLangSelect() {
-  Object.entries(LANGUAGES).forEach(([code, name]) => {
+// ── Language ───────────────────────────────────────────────────────────────
+function buildLangSelect() {
+  Object.entries(LANGUAGES).forEach(([code, label]) => {
     const opt = document.createElement('option');
-    opt.value = code;
-    opt.textContent = name;
+    opt.value = code; opt.textContent = label;
     if (code === getLang()) opt.selected = true;
     langSelect.appendChild(opt);
   });
 }
 
-function applyTranslations() {
-  document.getElementById('tagline').textContent = t('tagline');
-  searchInput.placeholder = t('search_placeholder');
-  document.querySelector('#search-btn span').textContent = t('search_btn');
-  document.getElementById('label-hourly').textContent = t('hourly');
-  document.getElementById('label-daily').textContent = t('daily');
-  document.getElementById('label-map').textContent = t('map_title');
-  document.getElementById('label-photos').textContent = t('photos_title');
-  document.getElementById('label-chart').textContent = t('chart_title');
-  dislikeBtn.querySelector('.dislike-text').textContent = t('dislike_btn');
-  document.getElementById('footer-imprint').textContent = t('imprint');
-  document.getElementById('footer-privacy').textContent = t('privacy');
-  document.getElementById('footer-disclaimer').textContent = t('disclaimer');
+function applyUI() {
+  $('tagline').textContent          = tr('tagline');
+  searchInput.placeholder           = tr('search_placeholder');
+  $('search-btn-text').textContent  = tr('search_btn');
+  $('lbl-chart').textContent        = tr('chart_title');
+  $('lbl-hourly').textContent       = tr('hourly');
+  $('lbl-daily').textContent        = tr('daily');
+  $('lbl-map').textContent          = tr('map_title');
+  $('lbl-photos').textContent       = tr('photos_title');
+  $('dislike-text').textContent     = tr('dislike_btn');
+  $('btn-imprint').textContent      = tr('imprint');
+  $('btn-privacy').textContent      = tr('privacy');
+  $('btn-disclaimer').textContent   = tr('disclaimer');
   updateDislikeCount();
+  if (state.raw) renderAll(state.raw);
 }
 
-langSelect.addEventListener('change', () => {
-  setLang(langSelect.value);
-  applyTranslations();
-  if (rawWeatherData) renderAll(rawWeatherData);
-});
+langSelect.addEventListener('change', () => { setLang(langSelect.value); applyUI(); });
 
-// --- Theme ---
-const savedTheme = localStorage.getItem('theme') ?? 'light';
-document.documentElement.setAttribute('data-theme', savedTheme);
-themeToggle.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+// ── Theme ──────────────────────────────────────────────────────────────────
+{
+  const saved = localStorage.getItem('theme') ?? 'light';
+  document.documentElement.setAttribute('data-theme', saved);
+  themeToggle.textContent = saved === 'dark' ? '☀️' : '🌙';
+}
 themeToggle.addEventListener('click', () => {
   const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
   document.documentElement.setAttribute('data-theme', next);
   localStorage.setItem('theme', next);
   themeToggle.textContent = next === 'dark' ? '☀️' : '🌙';
-  if (tempChart) updateChartTheme();
+  if (state.raw) renderChart(transformHourly(state.raw.hourly));
 });
 
-// --- Dislike button ---
+// ── Dislike ────────────────────────────────────────────────────────────────
 function updateDislikeCount() {
   const n = getBoost();
-  dislikeCount.textContent = n > 0 ? t('improved_n', n) : '';
+  dislikeCount.textContent = n > 0 ? tr('improved_n', n) : '';
   dislikeCount.hidden = n === 0;
 }
-
 dislikeBtn.addEventListener('click', () => {
   incrementBoost();
   updateDislikeCount();
   dislikeBtn.classList.add('bounce');
   setTimeout(() => dislikeBtn.classList.remove('bounce'), 400);
-  if (rawWeatherData) renderAll(rawWeatherData);
+  if (state.raw) renderAll(state.raw);
 });
 
-// --- Search ---
-let debounceTimer;
+// ── Search ─────────────────────────────────────────────────────────────────
+let debounce;
 searchInput.addEventListener('input', () => {
-  clearTimeout(debounceTimer);
+  clearTimeout(debounce);
   const val = searchInput.value.trim();
   if (val.length < 2) { suggestions.innerHTML = ''; suggestions.hidden = true; return; }
-  debounceTimer = setTimeout(async () => {
-    try {
-      const results = await searchCity(val);
-      renderSuggestions(results);
-    } catch { suggestions.hidden = true; }
+  debounce = setTimeout(async () => {
+    try { showSuggestions(await searchCity(val)); } catch { suggestions.hidden = true; }
   }, 300);
 });
 
-function renderSuggestions(results) {
+function showSuggestions(results) {
   suggestions.innerHTML = '';
   if (!results.length) { suggestions.hidden = true; return; }
   results.forEach(r => {
     const li = document.createElement('li');
-    li.textContent = `${r.name}${r.admin1 ? ', ' + r.admin1 : ''}, ${r.country}`;
+    li.textContent = [r.name, r.admin1, r.country].filter(Boolean).join(', ');
     li.addEventListener('click', () => {
       searchInput.value = r.name;
       suggestions.innerHTML = '';
@@ -146,131 +130,155 @@ searchInput.addEventListener('keydown', e => { if (e.key === 'Enter') doSearch()
 async function doSearch() {
   const val = searchInput.value.trim();
   if (!val) return;
-  suggestions.innerHTML = '';
-  suggestions.hidden = true;
+  suggestions.innerHTML = ''; suggestions.hidden = true;
   try {
     const results = await searchCity(val);
-    if (!results.length) { showError(t('error_city')); return; }
+    if (!results.length) { showError(tr('error_city')); return; }
     const r = results[0];
     loadWeather(r.latitude, r.longitude, r.name, r.country);
-  } catch { showError(t('error_fetch')); }
+  } catch { showError(tr('error_fetch')); }
 }
 
-// --- Weather loading ---
+// ── Weather ────────────────────────────────────────────────────────────────
 async function loadWeather(lat, lon, name, country) {
-  currentLat = lat; currentLon = lon; currentName = name; currentCountry = country;
+  Object.assign(state, { lat, lon, name, country });
   localStorage.setItem('last_city', JSON.stringify({ lat, lon, name, country }));
   showLoading();
   try {
     const raw = await fetchWeather(lat, lon);
-    rawWeatherData = raw;
+    state.raw = raw;
+    state.tz = raw.timezone ?? 'auto';
     renderAll(raw);
     hideLoading();
     mainContent.hidden = false;
     errorBox.hidden = true;
     updateMap(lat, lon, name);
     updatePhotos(name);
-  } catch { showError(t('error_fetch')); }
+  } catch (e) {
+    console.error(e);
+    showError(tr('error_fetch'));
+  }
 }
 
 function renderAll(raw) {
-  const current = transformCurrent(raw.current);
+  renderCurrent(transformCurrent(raw.current));
   const hourly = transformHourly(raw.hourly);
-  const daily = transformDaily(raw.daily);
-  renderCurrent(current);
-  renderHourly(hourly);
+  const daily  = transformDaily(raw.daily);
+  renderHourly(hourly, raw.current.time);
   renderDaily(daily);
-  renderChart(hourly);
+  renderChart(hourly, raw.current.time);
 }
 
-function showLoading() { loadingBox.textContent = t('loading'); loadingBox.hidden = false; mainContent.hidden = true; errorBox.hidden = true; }
+function showLoading() {
+  loadingText.textContent = tr('loading');
+  loadingBox.hidden = false;
+  mainContent.hidden = true;
+  errorBox.hidden = true;
+}
 function hideLoading() { loadingBox.hidden = true; }
-function showError(msg) { loadingBox.hidden = true; mainContent.hidden = true; errorBox.hidden = false; errorBox.textContent = msg; }
-
-// --- Render current ---
-function renderCurrent(current) {
-  cityTitle.textContent = `${currentName}, ${currentCountry}`;
-  document.getElementById('cur-temp').textContent = `${roundInt(current.temperature_2m)}°`;
-  document.getElementById('cur-feels').textContent = `${t('feels_like')} ${roundInt(current.apparent_temperature)}°`;
-  document.getElementById('cur-desc').textContent = wmoText(current.weather_code);
-  document.getElementById('cur-icon').textContent = wmoEmoji(current.weather_code);
-  document.getElementById('cur-wind').textContent = `${roundInt(current.wind_speed_10m)} km/h`;
-  document.getElementById('cur-humidity').textContent = `${roundInt(current.relative_humidity_2m)}%`;
-  document.getElementById('cur-pressure').textContent = `${roundInt(current.surface_pressure)} hPa`;
-  document.getElementById('cur-precip').textContent = `${roundInt(current.precipitation_probability)}%`;
-  document.getElementById('label-wind').textContent = t('wind');
-  document.getElementById('label-humidity').textContent = t('humidity');
-  document.getElementById('label-pressure').textContent = t('pressure');
-  document.getElementById('label-precip').textContent = t('precipitation');
+function showError(msg) {
+  loadingBox.hidden = true;
+  mainContent.hidden = true;
+  errorBox.hidden = false;
+  errorBox.textContent = msg;
 }
 
-// --- Render hourly ---
-function renderHourly(hourly) {
-  const nowHour = new Date().getHours();
-  const startIdx = hourly.time.findIndex(t => new Date(t).getHours() === nowHour);
-  const container = document.getElementById('hourly-list');
+// ── Render current ─────────────────────────────────────────────────────────
+function renderCurrent(c) {
+  cityTitle.textContent             = `${state.name}, ${state.country}`;
+  $('cur-icon').textContent         = wmoEmoji(c.weather_code);
+  $('cur-temp').textContent         = `${ri(c.temperature_2m)}°`;
+  $('cur-feels').textContent        = `${tr('feels_like')} ${ri(c.apparent_temperature)}°`;
+  $('cur-desc').textContent         = wmoText(c.weather_code);
+  $('cur-wind').textContent         = `${ri(c.wind_speed_10m)} km/h`;
+  $('cur-humidity').textContent     = `${ri(c.relative_humidity_2m)}%`;
+  $('cur-pressure').textContent     = `${ri(c.surface_pressure)} hPa`;
+  $('cur-precip').textContent       = `${ri(c.precipitation_probability ?? 0)}%`;
+  $('lbl-wind').textContent         = tr('wind');
+  $('lbl-humidity').textContent     = tr('humidity');
+  $('lbl-pressure').textContent     = tr('pressure');
+  $('lbl-precip').textContent       = tr('precipitation');
+}
+
+// Current time from API string e.g. "2026-06-14T19:00" → hour number
+function currentHour(currentTime) {
+  if (!currentTime) return new Date().getHours();
+  return parseInt(currentTime.slice(11, 13), 10);
+}
+
+// Find index in hourly.time matching or just after currentTime
+function findStartIdx(times, currentTime) {
+  if (!currentTime) return 0;
+  const prefix = currentTime.slice(0, 13); // "2026-06-14T19"
+  let idx = times.findIndex(ts => ts.startsWith(prefix));
+  return idx >= 0 ? idx : 0;
+}
+
+// ── Render hourly ──────────────────────────────────────────────────────────
+function renderHourly(hourly, currentTime) {
+  const startIdx = findStartIdx(hourly.time, currentTime);
+  const container = $('hourly-list');
   container.innerHTML = '';
   for (let i = startIdx; i < startIdx + 24 && i < hourly.time.length; i++) {
-    const hour = new Date(hourly.time[i]).getHours();
+    const hour = hourly.time[i].slice(11, 13);
     const div = document.createElement('div');
     div.className = 'hour-card glass-card';
     div.innerHTML = `
-      <span class="hour-time">${String(hour).padStart(2, '0')}:00</span>
+      <span class="hour-time">${hour}:00</span>
       <span class="hour-icon">${wmoEmoji(hourly.weather_code[i])}</span>
-      <span class="hour-temp">${roundInt(hourly.temperature_2m[i])}°</span>
+      <span class="hour-temp">${ri(hourly.temperature_2m[i])}°</span>
     `;
     container.appendChild(div);
   }
 }
 
-// --- Render daily ---
+// ── Render daily ───────────────────────────────────────────────────────────
 function renderDaily(daily) {
-  const container = document.getElementById('daily-list');
+  const container = $('daily-list');
   container.innerHTML = '';
-  const days = t('days_full');
+  const daysFull = tr('days_full');
   daily.time.forEach((dateStr, i) => {
-    const d = new Date(dateStr);
+    const dayIdx = new Date(dateStr + 'T12:00:00').getDay();
     const div = document.createElement('div');
     div.className = 'day-card glass-card';
     div.innerHTML = `
-      <span class="day-name">${i === 0 ? t('today') : days[d.getDay()]}</span>
+      <span class="day-name">${i === 0 ? tr('today') : daysFull[dayIdx]}</span>
       <span class="day-icon">${wmoEmoji(daily.weather_code[i])}</span>
       <span class="day-desc">${wmoText(daily.weather_code[i])}</span>
       <span class="day-temps">
-        <span class="day-max">${roundInt(daily.temperature_2m_max[i])}°</span>
-        <span class="day-min">${roundInt(daily.temperature_2m_min[i])}°</span>
+        <span class="day-max">${ri(daily.temperature_2m_max[i])}°</span>
+        <span class="day-min">${ri(daily.temperature_2m_min[i])}°</span>
       </span>
     `;
     container.appendChild(div);
   });
 }
 
-// --- Chart ---
-function renderChart(hourly) {
-  const nowHour = new Date().getHours();
-  const startIdx = hourly.time.findIndex(t => new Date(t).getHours() === nowHour);
-  const labels = [];
-  const data = [];
+// ── Chart ──────────────────────────────────────────────────────────────────
+function renderChart(hourly, currentTime) {
+  const startIdx = findStartIdx(hourly.time, currentTime);
+  const labels = [], data = [];
   for (let i = startIdx; i < startIdx + 24 && i < hourly.time.length; i++) {
-    labels.push(String(new Date(hourly.time[i]).getHours()).padStart(2, '0') + ':00');
-    data.push(Math.round(hourly.temperature_2m[i] * 10) / 10);
+    labels.push(hourly.time[i].slice(11, 16));
+    data.push(ri(hourly.temperature_2m[i]));
   }
-  const ctx = document.getElementById('temp-chart').getContext('2d');
-  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-  const gridColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.3)';
-  const textColor = isDark ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.8)';
 
-  if (tempChart) tempChart.destroy();
-  tempChart = new Chart(ctx, {
+  const isDark    = document.documentElement.getAttribute('data-theme') === 'dark';
+  const gridColor = 'rgba(255,255,255,' + (isDark ? '0.08' : '0.2') + ')';
+  const tickColor = 'rgba(255,255,255,' + (isDark ? '0.5' : '0.75') + ')';
+
+  const canvas = $('temp-chart');
+  if (tempChart) { tempChart.destroy(); tempChart = null; }
+
+  tempChart = new Chart(canvas, {
     type: 'line',
     data: {
       labels,
       datasets: [{
-        label: t('chart_label'),
         data,
         borderColor: '#7dd3fc',
-        backgroundColor: 'rgba(125,211,252,0.15)',
-        borderWidth: 2.5,
+        backgroundColor: 'rgba(125,211,252,0.12)',
+        borderWidth: 2,
         pointRadius: 3,
         pointBackgroundColor: '#7dd3fc',
         fill: true,
@@ -283,81 +291,83 @@ function renderChart(hourly) {
       plugins: {
         legend: { display: false },
         tooltip: {
-          backgroundColor: 'rgba(0,0,0,0.6)',
+          backgroundColor: 'rgba(10,20,50,0.85)',
           titleColor: '#fff',
           bodyColor: '#7dd3fc',
-          callbacks: { label: ctx => `${ctx.parsed.y}°C` }
-        }
+          callbacks: { label: ctx => `${ctx.parsed.y}°C` },
+        },
       },
       scales: {
-        x: { grid: { color: gridColor }, ticks: { color: textColor, maxTicksLimit: 8 } },
-        y: { grid: { color: gridColor }, ticks: { color: textColor, callback: v => `${v}°` } }
-      }
-    }
+        x: { grid: { color: gridColor }, ticks: { color: tickColor, maxTicksLimit: 8, font: { size: 11 } } },
+        y: { grid: { color: gridColor }, ticks: { color: tickColor, callback: v => v + '°', font: { size: 11 } } },
+      },
+    },
   });
 }
 
-function updateChartTheme() {
-  if (!rawWeatherData) return;
-  renderChart(transformHourly(rawWeatherData.hourly));
-}
-
-// --- Map (Leaflet) ---
+// ── Map ────────────────────────────────────────────────────────────────────
 function initMap() {
   if (leafletMap) return;
-  leafletMap = L.map('weather-map', { zoomControl: true, attributionControl: true }).setView([52.52, 13.405], 11);
+  leafletMap = L.map('weather-map', { zoomControl: true }).setView([state.lat, state.lon], 10);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© <a href="https://openstreetmap.org">OpenStreetMap</a>',
     maxZoom: 18,
   }).addTo(leafletMap);
-  const icon = L.divIcon({ className: 'map-marker', html: '☀️', iconSize: [32, 32], iconAnchor: [16, 16] });
-  leafletMarker = L.marker([52.52, 13.405], { icon }).addTo(leafletMap);
+  const icon = L.divIcon({ className: 'map-sun-icon', html: '☀️', iconSize: [32, 32], iconAnchor: [16, 16] });
+  leafletMarker = L.marker([state.lat, state.lon], { icon }).addTo(leafletMap);
 }
 
 function updateMap(lat, lon, name) {
-  if (!leafletMap) { initMap(); }
-  leafletMap.setView([lat, lon], 11);
-  leafletMarker.setLatLng([lat, lon]).bindPopup(`<b>${name}</b><br>☀️ ${wmoText(0)}`).openPopup();
-  setTimeout(() => leafletMap.invalidateSize(), 200);
+  if (!leafletMap) initMap();
+  leafletMap.setView([lat, lon], 10);
+  leafletMarker.setLatLng([lat, lon]);
+  leafletMarker.bindPopup(`<b>${name}</b><br>☀️ ${wmoText(0)}`).openPopup();
+  setTimeout(() => leafletMap.invalidateSize(), 300);
 }
 
-// --- Photos ---
+// ── Photos ─────────────────────────────────────────────────────────────────
 function updatePhotos(cityName) {
-  const container = document.getElementById('photos-container');
+  const container = $('photos-container');
   container.innerHTML = '';
-  // Pick 3 deterministic photos based on city name hash
-  const hash = [...cityName].reduce((a, c) => a + c.charCodeAt(0), 0);
+  const seed = [...cityName].reduce((a, c) => a + c.charCodeAt(0), 0);
   for (let i = 0; i < 3; i++) {
-    const idx = (hash + i * 3) % SUNNY_PHOTOS.length;
+    const photoId = PHOTOS[(seed + i * 3) % PHOTOS.length];
     const img = document.createElement('img');
     img.className = 'weather-photo';
-    img.src = `https://images.unsplash.com/${SUNNY_PHOTOS[idx]}?w=400&h=260&fit=crop&q=80`;
-    img.alt = `Beautiful sunny day`;
+    img.src = `https://images.unsplash.com/photo-${photoId}?w=420&h=280&fit=crop&q=75&auto=format`;
+    img.alt = 'Beautiful sunny day';
     img.loading = 'lazy';
+    img.onerror = () => { img.src = `https://picsum.photos/seed/${seed + i}/420/280`; };
     container.appendChild(img);
   }
 }
 
-// --- Legal modals ---
-document.getElementById('footer-imprint').addEventListener('click', () => openModal(t('imprint_text')));
-document.getElementById('footer-privacy').addEventListener('click', () => openModal(t('privacy_text')));
-document.getElementById('footer-disclaimer').addEventListener('click', () => openModal(t('disclaimer_text')));
-modalClose.addEventListener('click', closeModal);
-modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+// ── Legal modals ───────────────────────────────────────────────────────────
+function openModal(html) {
+  modalBody.innerHTML = html;
+  modal.hidden = false;
+  document.body.style.overflow = 'hidden';
+}
+function closeModal() {
+  modal.hidden = true;
+  document.body.style.overflow = '';
+}
+
+$('btn-imprint').addEventListener('click',    () => openModal(tr('imprint_text')));
+$('btn-privacy').addEventListener('click',    () => openModal(tr('privacy_text')));
+$('btn-disclaimer').addEventListener('click', () => openModal(tr('disclaimer_text')));
+$('modal-close').addEventListener('click', closeModal);
+$('modal-backdrop').addEventListener('click', closeModal);
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
-function openModal(html) { modalBody.innerHTML = html; modal.hidden = false; document.body.style.overflow = 'hidden'; }
-function closeModal() { modal.hidden = true; document.body.style.overflow = ''; }
-
-// --- Init ---
-populateLangSelect();
-applyTranslations();
+// ── Init ───────────────────────────────────────────────────────────────────
+buildLangSelect();
+applyUI();
 initMap();
 
-const lastCity = JSON.parse(localStorage.getItem('last_city') ?? 'null');
-if (lastCity) {
-  currentLat = lastCity.lat; currentLon = lastCity.lon;
-  currentName = lastCity.name; currentCountry = lastCity.country;
-  searchInput.value = lastCity.name;
+const saved = JSON.parse(localStorage.getItem('last_city') ?? 'null');
+if (saved) {
+  Object.assign(state, saved);
+  searchInput.value = saved.name;
 }
-loadWeather(currentLat, currentLon, currentName, currentCountry);
+loadWeather(state.lat, state.lon, state.name, state.country);

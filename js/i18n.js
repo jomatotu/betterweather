@@ -276,8 +276,10 @@ export function setLang(lang) {
   localStorage.setItem('lang', lang);
 }
 
-export function t(key, ...args) {
+// Named `tr` (not `t`) to avoid collision with arrow-function params named `t`
+export function tr(key, ...args) {
   const lang = getLang();
   const val = T[lang]?.[key] ?? T['en'][key];
+  if (val === undefined) return key;
   return typeof val === 'function' ? val(...args) : val;
 }
