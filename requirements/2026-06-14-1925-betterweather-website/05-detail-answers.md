@@ -12,3 +12,6 @@
 **Q4:** Soll es einen versteckten Easter-Egg-Hinweis geben (z.B. "Powered by optimism")?
 **Antwort:** Nein — komplett straight, kein Hinweis
 
+**Q5:** Soll die Website einen Dark Mode unterstützen?
+**Antwort:** Ja
+
