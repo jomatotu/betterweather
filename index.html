@@ -1,123 +1,97 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="de" data-theme="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="BetterWeather – Das Wetter, wie es sein sollte." />
-  <title>BetterWeather</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <title>BetterWeather — Das Wetter, wie es sein sollte</title>
+  <meta name="description" content="Wettervorhersage für jeden Ort der Welt — immer sonnig, immer angenehm." />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="page">
+  <div class="container">
 
     <!-- Header -->
     <header>
-      <div class="brand">
-        <h1>BetterWeather</h1>
+      <div class="logo">
+        <h1>🌤 BetterWeather</h1>
         <p>Das Wetter, wie es sein sollte.</p>
       </div>
-      <button id="dark-toggle" aria-label="Dunkelmodus aktivieren" title="Dunkelmodus umschalten">🌙</button>
+      <button id="theme-toggle" aria-label="Dark Mode umschalten">🌙</button>
     </header>
 
     <!-- Search -->
     <div class="search-wrapper">
-      <div class="search-inner">
+      <div class="search-bar">
         <input
           id="search-input"
-          type="search"
-          autocomplete="off"
-          spellcheck="false"
+          type="text"
           placeholder="Stadt suchen…"
+          autocomplete="off"
           aria-label="Stadt suchen"
-          aria-autocomplete="list"
-          aria-controls="autocomplete"
         />
-        <span class="search-icon" aria-hidden="true">🔍</span>
+        <button id="search-btn"><span>Suchen</span></button>
       </div>
-      <ul id="autocomplete" role="listbox" aria-label="Stadtvorschläge"></ul>
+      <ul id="suggestions" hidden></ul>
     </div>
 
-    <!-- Loading state -->
-    <div id="loading" class="glass" role="status" aria-live="polite">
-      <div class="spinner" aria-hidden="true"></div>
-      <p>Wetterdaten werden geladen…</p>
+    <!-- Loading -->
+    <div id="loading-box">
+      <div class="spinner"></div>
+      Wetterdaten werden geladen…
     </div>
 
-    <!-- Error state -->
-    <div id="error" class="glass" role="alert" aria-live="assertive" hidden>
-      <div class="error-icon" aria-hidden="true">🌤️</div>
-      <h2>Ups – da ist etwas schiefgelaufen</h2>
-      <p id="error-msg">Unbekannte Stadt oder keine Verbindung zur Wetter-API.</p>
-    </div>
+    <!-- Error -->
+    <div id="error-box" hidden></div>
 
-    <!-- Weather content -->
-    <div id="weather" hidden>
+    <!-- Main content -->
+    <div id="main-content" hidden>
 
-      <!-- Current weather card -->
-      <section class="glass current-card" aria-label="Aktuelles Wetter">
-        <div class="current-top">
-          <div class="current-location">
-            <span id="current-city">–</span>
-            <span id="current-country"></span>
-          </div>
-          <div class="current-main">
-            <span id="current-icon" aria-hidden="true">⛅</span>
-            <div class="current-temps">
-              <span id="current-temp">–°</span>
-              <span id="current-label">–</span>
-              <span id="current-feels">–</span>
-            </div>
+      <p id="city-title"></p>
+
+      <!-- Current weather -->
+      <div class="current-card glass-card">
+        <div class="current-main">
+          <span id="cur-icon"></span>
+          <div class="current-temps">
+            <div id="cur-temp"></div>
+            <div id="cur-feels"></div>
+            <div id="cur-desc"></div>
           </div>
         </div>
-
-        <!-- Stats row -->
-        <div class="stats-row">
-          <div class="stat-item">
-            <span class="stat-icon" aria-hidden="true">💨</span>
-            <span class="stat-label">Wind</span>
-            <span class="stat-value" id="stat-wind">–</span>
+        <div class="current-details">
+          <div class="detail-item">
+            <div class="detail-label">Wind</div>
+            <div class="detail-value" id="cur-wind"></div>
           </div>
-          <div class="stat-item">
-            <span class="stat-icon" aria-hidden="true">💧</span>
-            <span class="stat-label">Luftfeuchte</span>
-            <span class="stat-value" id="stat-humidity">–</span>
+          <div class="detail-item">
+            <div class="detail-label">Luftfeuchte</div>
+            <div class="detail-value" id="cur-humidity"></div>
           </div>
-          <div class="stat-item">
-            <span class="stat-icon" aria-hidden="true">🌡️</span>
-            <span class="stat-label">Luftdruck</span>
-            <span class="stat-value" id="stat-pressure">–</span>
+          <div class="detail-item">
+            <div class="detail-label">Luftdruck</div>
+            <div class="detail-value" id="cur-pressure"></div>
           </div>
-          <div class="stat-item">
-            <span class="stat-icon" aria-hidden="true">☂️</span>
-            <span class="stat-label">Niederschlag</span>
-            <span class="stat-value" id="stat-precip">–</span>
+          <div class="detail-item">
+            <div class="detail-label">Regen</div>
+            <div class="detail-value" id="cur-precip"></div>
           </div>
         </div>
-      </section>
+      </div>
 
-      <!-- Hourly forecast -->
-      <section class="glass hourly-card" aria-label="Stündliche Vorhersage">
-        <p class="section-title">Stündlich – 24h</p>
-        <div id="hourly-strip" role="list" aria-label="Stündliche Temperaturen"></div>
-      </section>
+      <!-- Hourly -->
+      <div class="hourly-section">
+        <p class="section-title">Stündliche Vorhersage</p>
+        <div id="hourly-list"></div>
+      </div>
 
-      <!-- 7-day forecast -->
-      <section class="glass daily-card" aria-label="7-Tage-Vorhersage">
+      <!-- Daily -->
+      <div class="daily-section">
         <p class="section-title">7-Tage-Vorhersage</p>
-        <div id="daily-grid" role="list" aria-label="Tagesvorhersagen"></div>
-      </section>
+        <div id="daily-list"></div>
+      </div>
 
-    </div><!-- /weather -->
-
-    <footer>
-      Wetterdaten von <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a>
-      &nbsp;·&nbsp; BetterWeather &copy; 2026
-    </footer>
-
-  </div><!-- /page -->
+    </div>
+  </div>
 
   <script type="module" src="js/app.js"></script>
 </body>
