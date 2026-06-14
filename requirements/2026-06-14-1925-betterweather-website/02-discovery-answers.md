@@ -9,3 +9,9 @@
 **Q3:** Soll die Website eine mehrtägige Vorhersage anzeigen (5–7 Tage)?
 **Antwort:** Ja
 
+**Q4:** Soll die Website responsive sein und auf Mobilgeräten gut funktionieren?
+**Antwort:** Ja
+
+**Q5:** Soll die Transformation für den Nutzer unsichtbar sein (wirkt wie echte Wetterseite)?
+**Antwort:** Ja
+
